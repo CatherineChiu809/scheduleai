@@ -19,18 +19,10 @@ export async function POST(req) {
     const completion = await client.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
-        {
-          role: "system",
-          content:
-            "You are a study planner assistant. Create a structured daily schedule based on tasks and events.",
-        },
+        { role: "system", content: "You are a study planner assistant." },
         {
           role: "user",
-          content: `Here are my tasks: ${JSON.stringify(
-            tasks
-          )} and events: ${JSON.stringify(
-            events
-          )}. Please return an organized schedule with times.`,
+          content: `Tasks: ${JSON.stringify(tasks)} | Events: ${JSON.stringify(events)}`,
         },
       ],
     });

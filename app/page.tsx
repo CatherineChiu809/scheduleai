@@ -3,13 +3,13 @@
 import { useState } from "react";
 
 export default function Page() {
-  const [tasks, setTasks] = useState("");
-  const [events, setEvents] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [tasks, setTasks] = useState<string>("");
+  const [events, setEvents] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const [schedule, setSchedule] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -20,8 +20,14 @@ export default function Page() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tasks: tasks.split("\n").map((t) => t.trim()).filter(Boolean),
-          events: events.split("\n").map((e) => e.trim()).filter(Boolean),
+          tasks: tasks
+            .split("\n")
+            .map((t) => t.trim())
+            .filter(Boolean),
+          events: events
+            .split("\n")
+            .map((ev) => ev.trim())
+            .filter(Boolean),
         }),
       });
 
@@ -29,10 +35,14 @@ export default function Page() {
         throw new Error(`Server error: ${res.status}`);
       }
 
-      const data = await res.json();
+      const data: { schedule: string } = await res.json();
       setSchedule(data.schedule);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Something went wrong.");
+      }
     } finally {
       setLoading(false);
     }
@@ -53,7 +63,7 @@ export default function Page() {
           <textarea
             value={tasks}
             onChange={(e) => setTasks(e.target.value)}
-            placeholder="Math homework - 2h&#10;Read history - 1h"
+            placeholder={`Math homework - 2h\nRead history - 1h`}
             className="w-full border rounded-lg p-3 text-sm text-gray-900"
             rows={4}
           />
@@ -66,7 +76,7 @@ export default function Page() {
           <textarea
             value={events}
             onChange={(e) => setEvents(e.target.value)}
-            placeholder="Lecture 10:00-11:00&#10;Group study 3:00-4:00"
+            placeholder={`Lecture 10:00-11:00\nGroup study 3:00-4:00`}
             className="w-full border rounded-lg p-3 text-sm text-gray-900"
             rows={4}
           />

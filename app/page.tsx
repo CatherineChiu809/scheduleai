@@ -50,7 +50,7 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-start py-12 px-4">
-      <h1 className="text-4xl font-bold mb-6 text-gray-900">📅 Schedule AI</h1>
+      <h1 className="text-4xl font-bold mb-6 text-gray-900">📅 Schedule ai</h1>
 
       <form
         onSubmit={handleSubmit}

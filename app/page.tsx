@@ -37,9 +37,14 @@ export default function Page() {
 
       const data = await res.json();
       setSchedule(data.schedule);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
-    } finally {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Something went wrong");
+      }
+    }
+    finally {
       setLoading(false);
     }
   };

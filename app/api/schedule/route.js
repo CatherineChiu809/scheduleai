@@ -11,7 +11,7 @@ export async function POST(req) {
     const { tasks = [], events = [] } = body;
 
     const completion = await client.chat.completions.create({
-      model: "llama3-70b-8192", // free Groq model
+      model: "llama-3.3-70b-versatile",
       messages: [
         {
           role: "system",

@@ -1,119 +1,85 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function Page() {
-  const [mounted, setMounted] = useState(false);
-  const [tasks, setTasks] = useState("");
-  const [events, setEvents] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [taskInput, setTaskInput] = useState("");
+  const [eventInput, setEventInput] = useState("");
   const [schedule, setSchedule] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Prevent hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setLoading(true);
     setError(null);
-    setSchedule(null);
+
+    // Split user input into arrays safely
+    const tasks = taskInput
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
+
+    const events = eventInput
+      .split(",")
+      .map((ev) => ev.trim())
+      .filter((ev) => ev.length > 0);
 
     try {
       const res = await fetch("/api/schedule", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tasks: tasks
-            .split("\n")
-            .map((t) => t.trim())
-            .filter(Boolean),
-          events: events
-            .split("\n")
-            .map((ev) => ev.trim())
-            .filter(Boolean),
-        }),
+        body: JSON.stringify({ tasks, events }),
       });
 
       if (!res.ok) {
-        throw new Error(`Server error: ${res.status}`);
+        throw new Error(`Error: ${res.status}`);
       }
 
-      const data: { schedule: string } = await res.json();
+      const data = await res.json();
       setSchedule(data.schedule);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Something went wrong.");
-      }
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
-  }
-
-  // Don’t render until client mounts
-  if (!mounted) {
-    return null;
-  }
+  };
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-start py-12 px-4">
-      <h1 className="text-4xl font-bold mb-6 text-gray-900">📅 Schedule AI</h1>
+    <main className="p-6 max-w-2xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">📅 AI Study Schedule</h1>
 
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-2xl bg-white p-6 rounded-2xl shadow-md space-y-4"
+      <label className="block mb-2 font-medium">Tasks (comma separated)</label>
+      <input
+        type="text"
+        value={taskInput}
+        onChange={(e) => setTaskInput(e.target.value)}
+        className="w-full border rounded p-2 mb-4"
+        placeholder="e.g. math homework, read history, code project"
+      />
+
+      <label className="block mb-2 font-medium">Events (comma separated)</label>
+      <input
+        type="text"
+        value={eventInput}
+        onChange={(e) => setEventInput(e.target.value)}
+        className="w-full border rounded p-2 mb-4"
+        placeholder="e.g. soccer practice, doctor appointment"
+      />
+
+      <button
+        onClick={handleSubmit}
+        disabled={loading}
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
       >
-        <div>
-          <label className="block font-medium mb-2 text-gray-700">
-            Tasks (one per line)
-          </label>
-          <textarea
-            value={tasks}
-            onChange={(e) => setTasks(e.target.value)}
-            placeholder="Math homework - 2h | Read history - 1h"
-            className="w-full border rounded-lg p-3 text-sm text-gray-900"
-            rows={4}
-          />
-        </div>
+        {loading ? "Generating..." : "Generate Schedule"}
+      </button>
 
-        <div>
-          <label className="block font-medium mb-2 text-gray-700">
-            Events (one per line)
-          </label>
-          <textarea
-            value={events}
-            onChange={(e) => setEvents(e.target.value)}
-            placeholder="Lecture 10:00-11:00 | Group study 3:00-4:00"
-            className="w-full border rounded-lg p-3 text-sm text-gray-900"
-            rows={4}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
-        >
-          {loading ? "Generating..." : "Create Schedule"}
-        </button>
-      </form>
-
-      {error && (
-        <p className="mt-6 text-red-600 font-medium">❌ {error}</p>
-      )}
+      {error && <p className="text-red-600 mt-4">{error}</p>}
 
       {schedule && (
-        <div className="mt-8 w-full max-w-2xl bg-white p-6 rounded-2xl shadow-md">
-          <h2 className="text-xl font-semibold mb-3 text-gray-900">
-            Generated Schedule
-          </h2>
-          <pre className="whitespace-pre-wrap text-gray-800 text-sm">
-            {schedule}
-          </pre>
+        <div className="mt-6 p-4 border rounded bg-gray-50 whitespace-pre-line">
+          <h2 className="font-semibold mb-2">Your Schedule:</h2>
+          <p>{schedule}</p>
         </div>
       )}
     </main>

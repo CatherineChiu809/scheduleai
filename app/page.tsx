@@ -1,13 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Page() {
-  const [tasks, setTasks] = useState<string>("");
-  const [events, setEvents] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [mounted, setMounted] = useState(false);
+  const [tasks, setTasks] = useState("");
+  const [events, setEvents] = useState("");
+  const [loading, setLoading] = useState(false);
   const [schedule, setSchedule] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -48,9 +54,14 @@ export default function Page() {
     }
   }
 
+  // Don’t render until client mounts
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-start py-12 px-4">
-      <h1 className="text-4xl font-bold mb-6 text-gray-900">📅 Schedule ai</h1>
+      <h1 className="text-4xl font-bold mb-6 text-gray-900">📅 Schedule AI</h1>
 
       <form
         onSubmit={handleSubmit}
@@ -63,7 +74,7 @@ export default function Page() {
           <textarea
             value={tasks}
             onChange={(e) => setTasks(e.target.value)}
-            placeholder={`Math homework - 2h\nRead history - 1h`}
+            placeholder="Math homework - 2h | Read history - 1h"
             className="w-full border rounded-lg p-3 text-sm text-gray-900"
             rows={4}
           />
@@ -76,7 +87,7 @@ export default function Page() {
           <textarea
             value={events}
             onChange={(e) => setEvents(e.target.value)}
-            placeholder={`Lecture 10:00-11:00\nGroup study 3:00-4:00`}
+            placeholder="Lecture 10:00-11:00 | Group study 3:00-4:00"
             className="w-full border rounded-lg p-3 text-sm text-gray-900"
             rows={4}
           />

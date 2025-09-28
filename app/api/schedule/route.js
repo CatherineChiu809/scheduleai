@@ -1,43 +1,40 @@
-import OpenAI from "openai";
+import { OpenAI } from "openai";
 
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.GROQ_API_KEY, // set this in your .env
+  baseURL: "https://api.groq.com/openai/v1", // Groq uses OpenAI-compatible API
 });
 
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { tasks, events } = body;
-
-    if (!tasks || !events) {
-      return new Response(
-        JSON.stringify({ error: "Tasks and events are required." }),
-        { status: 400 }
-      );
-    }
+    const { tasks = [], events = [] } = body;
 
     const completion = await client.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "llama3-70b-8192", // free Groq model
       messages: [
-        { role: "system", content: "You are a study planner assistant." },
+        {
+          role: "system",
+          content: "You are a helpful AI that creates study schedules.",
+        },
         {
           role: "user",
-          content: `Tasks: ${JSON.stringify(tasks)} | Events: ${JSON.stringify(events)}`,
+          content: `Here are my tasks: ${tasks.join(", ")}. 
+                    Here are my events: ${events.join(", ")}. 
+                    Please create a structured study schedule for me.`,
         },
       ],
     });
 
-    const schedule = completion.choices[0].message.content;
-
-    return new Response(JSON.stringify({ schedule }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ schedule: completion.choices[0].message.content }),
+      { headers: { "Content-Type": "application/json" } }
+    );
   } catch (err) {
-    console.error("API error:", err);
+    console.error("Error in /api/schedule:", err);
     return new Response(
       JSON.stringify({ error: "Failed to generate schedule" }),
-      { status: 500 }
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 }

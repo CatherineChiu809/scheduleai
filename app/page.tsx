@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 export default function Page() {
   const [taskInput, setTaskInput] = useState("");
@@ -43,48 +44,68 @@ export default function Page() {
       } else {
         setError("Something went wrong");
       }
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">📅 AI Study Schedule</h1>
+    <main className="p-6 max-w-2xl mx-auto flex flex-col items-center">
+      <h1 className="text-2xl font-bold mb-4 text-center">
+        📅 AI Study Schedule
+      </h1>
 
-      <label className="block mb-2 font-medium">Tasks (comma separated)</label>
-      <input
-        type="text"
-        value={taskInput}
-        onChange={(e) => setTaskInput(e.target.value)}
-        className="w-full border rounded p-2 mb-4"
-        placeholder="e.g. math homework, read history, code project"
-      />
+      <div className="w-full">
+        <label className="block mb-2 font-medium">
+          Tasks (comma separated)
+        </label>
+        <input
+          type="text"
+          value={taskInput}
+          onChange={(e) => setTaskInput(e.target.value)}
+          className="w-full border rounded p-2 mb-4"
+          placeholder="e.g. math homework, read history, code project"
+        />
 
-      <label className="block mb-2 font-medium">Events (comma separated)</label>
-      <input
-        type="text"
-        value={eventInput}
-        onChange={(e) => setEventInput(e.target.value)}
-        className="w-full border rounded p-2 mb-4"
-        placeholder="e.g. soccer practice, doctor appointment"
-      />
+        <label className="block mb-2 font-medium">
+          Events (comma separated)
+        </label>
+        <input
+          type="text"
+          value={eventInput}
+          onChange={(e) => setEventInput(e.target.value)}
+          className="w-full border rounded p-2 mb-4"
+          placeholder="e.g. soccer practice, doctor appointment"
+        />
 
-      <button
-        onClick={handleSubmit}
-        disabled={loading}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-      >
-        {loading ? "Generating..." : "Generate Schedule"}
-      </button>
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 w-full"
+        >
+          {loading ? "Generating..." : "Generate Schedule"}
+        </button>
+
+        {/* Button to go to Todo List page */}
+        <div className="flex justify-center mt-6">
+          <Link href="/input">
+            <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2">
+              📝 Go to Task List
+            </button>
+          </Link>
+        </div>
+      </div>
 
       {error && <p className="text-red-600 mt-4">{error}</p>}
 
       {schedule && (
-        <div className="mt-6 p-4 border rounded bg-gray-50 whitespace-pre-line">
-          <h2 className="font-semibold mb-2">Your Schedule:</h2>
-          <p>{schedule}</p>
+        <div className="mt-6 p-4 rounded-2xl shadow-lg bg-white dark:bg-gray-800 w-full">
+          <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+            Generated Schedule
+          </h2>
+          <pre className="whitespace-pre-wrap text-gray-800 dark:text-gray-200">
+            {schedule}
+          </pre>
         </div>
       )}
     </main>

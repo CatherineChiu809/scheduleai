@@ -89,9 +89,7 @@ export default function Page() {
         {/* Button to go to Todo List page */}
         <div className="flex justify-center mt-6">
           <Link href="/input">
-            <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2">
-              📝 Go to Task List
-            </button>
+            <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2">Task List</button>
           </Link>
         </div>
       </div>

@@ -1,10 +1,10 @@
 import { OpenAI } from "openai";
-import { promises as fs } from "fs";
+import fs from "fs";
 import path from "path";
 
 const client = new OpenAI({
-  apiKey: process.env.GROQ_API_KEY, // set this in your .env
-  baseURL: "https://api.groq.com/openai/v1", // Groq uses OpenAI-compatible API
+  apiKey: process.env.GROQ_API_KEY,
+  baseURL: "https://api.groq.com/openai/v1",
 });
 
 export async function POST(req) {
@@ -12,33 +12,42 @@ export async function POST(req) {
     const body = await req.json();
     const { tasks = [], events = [] } = body;
 
-    // reads txt file
-    const promptPath = path.join(process.cwd(), "app", "api", "schedule", "prompt.txt");
-    const basePrompt = await fs.readFile(promptPath, "utf-8");
+    // Convert task data to readable text for the AI
+    const formattedTasks = tasks.map((t) => {
+      return `Task: ${t.text}
+${t.details ? `Notes: ${t.details}` : ""}
+${t.time ? `Time Estimate: ${t.time}` : ""}
+${t.dueDate ? `Due Date: ${t.dueDate}` : ""}
+${t.priority ? `Priority: ${t.priority}` : ""}
+${t.completed ? "This task can be split." : ""}`;
+    }).join("\n\n");
 
-    // ✅ Combine static text with user inputs
-    const finalPrompt = `
-${basePrompt}
-Here are my tasks: ${tasks.join("\n")}
-Here are my events:${events.join("\n")}
-Please create a structured, realistic, and productive study schedule.`;
+    // Optional: read a longer instruction from a .txt file (if exists)
+    const txtPath = path.join(process.cwd(), "prompt.txt");
+    let extraPrompt = "";
+    if (fs.existsSync(txtPath)) {
+      extraPrompt = fs.readFileSync(txtPath, "utf8");
+    }
 
-    // ✅ Send the combined prompt to Groq’s API
     const completion = await client.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
         {
           role: "system",
-          content:"You are a helpful AI that creates optimized study schedules using the latest cognitive science research.",
+          content:
+            "You are a helpful AI that creates study schedules using cognitive science principles to optimize focus, breaks, and learning efficiency.",
         },
         {
           role: "user",
-          content: finalPrompt,
+          content: `
+${extraPrompt}
+Here are my tasks:\n${formattedTasks}\n
+Here are my events: ${events.join(", ")}.
+Please create a structured study schedule considering all task details.`,
         },
       ],
     });
 
-    // ✅ Return the AI-generated schedule
     return new Response(
       JSON.stringify({ schedule: completion.choices[0].message.content }),
       { headers: { "Content-Type": "application/json" } }

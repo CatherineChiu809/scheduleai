@@ -27,13 +27,13 @@ const TaskContext = createContext<TaskContextType | undefined>(undefined);
 export function TaskProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  // ✅ Load from localStorage on mount
+  // Load from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem("tasks");
     if (saved) setTasks(JSON.parse(saved));
   }, []);
 
-  // ✅ Save to localStorage whenever tasks change
+  // Save to localStorage whenever tasks change
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);

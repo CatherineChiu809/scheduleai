@@ -1,20 +1,22 @@
-// app/layout.tsx
-
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { TaskProvider } from "./context/TaskContext"; // ✅ add this
+import { Imperial_Script, Nunito_Sans } from "next/font/google";
+import { TaskProvider } from "./context/TaskContext";
 import "./globals.css";
 
+
 // Fonts
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const imperial_script = Imperial_Script({
+  variable: "--font-imperial-script",
+  subsets: ["latin"],
+  weight: "400"
+});
+
+const nunito_sans = Nunito_Sans({
+  variable: "--font-nunito-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+
 
 // Metadata
 export const metadata: Metadata = {
@@ -22,7 +24,6 @@ export const metadata: Metadata = {
   description: "Smart study planner with task tracking",
 };
 
-// Root Layout Component
 export default function RootLayout({
   children,
 }: {
@@ -31,9 +32,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${imperial_script.variable} antialiased`}
       >
-        {/* ✅ Wrap with your context provider */}
+        {/* Wrap with your context provider */}
         <TaskProvider>
           {children}
         </TaskProvider>

@@ -96,14 +96,14 @@ export default function Page() {
         </Link>
       </div>
 
-      <label className="block mb-2 font-medium">Additional Tasks</label>
+      {/* <label className="block mb-2 font-medium">Additional Tasks</label>
       <input
         type="text"
         value={taskInput}
         onChange={(e) => setTaskInput(e.target.value)}
         className="w-full border rounded p-2 mb-4"
         placeholder="Add extra tasks here (comma separated)"
-      />
+      /> */}
 
       <label className="block mb-2 font-medium">Events</label>
       <input

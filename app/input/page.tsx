@@ -37,23 +37,19 @@ export default function TodoPage() {
           Add
         </button>
       </form>
-    {/* task line */}
+{/* task line */}
       <div className="mt-6 w-full max-w-md space-y-2">
         {tasks.length === 0 && (
           <p className="text-gray-500 text-center">No tasks yet. Add one!</p>
         )}
         {tasks.map((task) => (
-          <div
-            key={task.id}
-            onClick={() => setSelectedTask(task)}
-            className="flex items-center justify-between cursor-pointer"
-          >
+          <div key={task.id} className="flex items-center justify-between">
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
                 checked={task.done}
                 onChange={(e) => {
-                  e.stopPropagation(); 
+                  e.stopPropagation();
                   toggleTask(task.id);
                 }}
               />
@@ -61,13 +57,21 @@ export default function TodoPage() {
                 {task.text}
               </span>
             </label>
-            <span className="text-gray-400 text-sm">⚙️</span>
+
+            {/* The gear icon is now the only clickable element to open the modal */}
+            <span
+              className="text-gray-400 text-sm cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();  // Prevent the task click event from firing
+                setSelectedTask(task); // Open the modal
+              }}
+            >⚙️</span>
           </div>
         ))}
       </div>
 
       {selectedTask && (
-        <div className="fixed inset-0 bg-black bg-opacity-100 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-opacity-100 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative">
             <h2 className="text-xl font-bold mb-4 text-black">Edit Task</h2>
 

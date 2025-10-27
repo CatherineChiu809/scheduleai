@@ -29,7 +29,7 @@ export default function TodoPage() {
           placeholder="Add a new task"
           className="border rounded px-2 py-1"
         />
-        <button type="submit" className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-700 transition disabled:opacity-50">
+        <button type="submit" className="bg-[#7f85ca] text-white px-3 py-1 rounded hover:bg-[#6970c1] transition disabled:opacity-50">
           Add
         </button>
       </form>
@@ -138,7 +138,7 @@ export default function TodoPage() {
                   }
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-600 transition-all"></div>
+                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-[#7f85ca] transition-all"></div>
                 <div className="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full transition-transform peer-checked:translate-x-full"></div>
               </label>
             </div>
@@ -148,7 +148,7 @@ export default function TodoPage() {
                 onClick={() =>
                   updateTask({ ...selectedTask, done: !selectedTask.done })
                 }
-                className="bg-green-600 text-white px-3 py-1 rounded"
+                className="bg-[#C6DBD5] text-gray-800 px-4 py-2 rounded-lg shadow font-semibold transition-all hover:bg-[#bad3cc]"
               >
                 {selectedTask.done ? "Undo" : "Mark Done"}
               </button>
@@ -157,7 +157,7 @@ export default function TodoPage() {
                   deleteTask(selectedTask.id);
                   setSelectedTask(null);
                 }}
-                className="bg-red-600 text-white px-3 py-1 rounded"
+                className="bg-[#DBC6CC] text-gray-800 px-4 py-2 rounded-lg shadow font-semibold transition-all hover:bg-[#cfb3bb]"
               >
                 Delete
               </button>
@@ -166,14 +166,14 @@ export default function TodoPage() {
                   updateTask(selectedTask);
                   setSelectedTask(null);
                 }}
-                className="bg-blue-600 text-white px-3 py-1 rounded"
+                className="bg-[#CBC6DB] text-gray-800 px-4 py-2 rounded-lg shadow font-semibold transition-all hover:bg-[#bbb4cf]"
               >
                 Save
               </button>
               <button
                 onClick={() => setSelectedTask(null)}
-                className="bg-gray-500 text-white px-3 py-1 rounded"
-              >
+                 className="bg-[#CED3BA] text-gray-800 px-4 py-2 rounded-lg shadow font-semibold transition-all hover:bg-[#c6ccaf]">
+              
                 Close
               </button>
             </div>

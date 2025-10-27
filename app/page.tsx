@@ -220,7 +220,7 @@ export default function Page() {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50"
+            className="w-full bg-[#7f85ca] text-white py-2 rounded-lg font-medium hover:bg-[#6970c1] transition disabled:opacity-50"
           >
             {loading ? "Generating..." : "Generate Schedule"}
           </button>
@@ -242,7 +242,7 @@ export default function Page() {
                   onClick={() => setSelectedDay(key)}
                   className={`flex flex-col items-center justify-center min-w-[85px] px-4 py-3 rounded-xl transition-all shadow-sm border ${
                   selectedDay === key
-                    ? "bg-blue-100 border-blue-400"
+                    ? "bg-[#e2e3f3] border-[#6970c1]"
                     : "bg-white hover:bg-gray-100 border-gray-300"
                   }`}
                 >

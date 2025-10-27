@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Task {
+  name: string;
   id: number;
   text: string;
   done: boolean;
@@ -18,7 +19,7 @@ interface Task {
 interface ScheduleBlock {
   timeStart: string;
   timeEnd: string;
-  task: string;
+  task?: string;
   priority?: string;
   break?: string;
   event?: string;
@@ -34,6 +35,20 @@ interface StudyTip {
   relatedTo: string;
   title: string;
   content: string;
+}
+
+interface ScheduleResponse {
+  days: {
+    schedule: {
+      timeStart?: string;
+      timeEnd?: string;
+      task?: string;
+      priority?: string;
+      event?: string;
+      break?: string;
+    }[];
+  }[];
+  studyTips?: StudyTip[];
 }
 
 interface ScheduleData {
@@ -67,7 +82,7 @@ export default function Page() {
     const savedSchedule = localStorage.getItem("aiSchedule");
     if (savedSchedule) {
       try {
-        const parsed = JSON.parse(savedSchedule);
+        const parsed: ScheduleData = JSON.parse(savedSchedule);
         setScheduleData(parsed);
         if (parsed.days?.length > 0) {
           setSelectedDay(`${parsed.days[0].day} ${parsed.days[0].date}`);
@@ -107,13 +122,13 @@ export default function Page() {
 
       if (!res.ok) throw new Error(`Error: ${res.status}`);
 
-      const data = await res.json();
+      const data: ScheduleResponse = await res.json();
       console.log("🟢 Schedule API Response:", data);
 
       // ✅ Parse due dates from tasks
       const taskDueDates = savedTasks
         .map((t) => (t.dueDate ? new Date(t.dueDate) : null))
-        .filter(Boolean) as Date[];
+        .filter((d): d is Date => d !== null);
 
       const latestDueDate =
         taskDueDates.length > 0
@@ -127,9 +142,9 @@ export default function Page() {
           : new Date(today.getTime() + 4 * 24 * 60 * 60 * 1000)
         : new Date(today.getTime() + 4 * 24 * 60 * 60 * 1000);
 
-      // ✅ Map backend data and rebuild consistent day/date list
+      // Map backend data and rebuild consistent day/date list
       const daysArray: DaySchedule[] = data.days
-        .map((dayObj: any, index: number) => {
+        .map((dayObj, index) => {
           const dayDate = new Date(today);
           dayDate.setDate(today.getDate() + index);
           const formattedDate = dayDate.toLocaleDateString("en-US", {
@@ -143,7 +158,7 @@ export default function Page() {
           return {
             day: formattedDay,
             date: formattedDate,
-            schedule: dayObj.schedule.map((item: any) => ({
+            schedule: dayObj.schedule.map((item) => ({
               timeStart: item.timeStart || "",
               timeEnd: item.timeEnd || "",
               task: item.task || item.event || item.break || "",
@@ -154,7 +169,7 @@ export default function Page() {
           };
         })
         // ✅ Limit to 5 days OR until latest due date
-        .filter((dayObj: { date: any; }) => {
+        .filter((dayObj) => {
           const date = new Date(`${dayObj.date}, ${today.getFullYear()}`);
           return date <= limitDate;
         })
@@ -170,14 +185,18 @@ export default function Page() {
       if (daysArray.length > 0) {
         setSelectedDay(`${daysArray[0].day} ${daysArray[0].date}`);
       }
-    } catch (err: any) {
-      console.error("❌ Error fetching schedule:", err);
-      setError(err.message || "Error generating schedule");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("❌ Error fetching schedule:", err);
+        setError(err.message);
+      } else {
+        console.error("❌ Unknown error:", err);
+        setError("Unexpected error generating schedule");
+      }
     } finally {
       setLoading(false);
     }
   };
-
 
   const formatTime = (time: string) => {
     if (!time) return "";
@@ -241,31 +260,27 @@ export default function Page() {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedDay(key)}
                   className={`flex flex-col items-center justify-center min-w-[85px] px-4 py-3 rounded-xl transition-all shadow-sm border ${
-                  selectedDay === key
-                    ? "bg-[#e2e3f3] border-[#6970c1]"
-                    : "bg-white hover:bg-gray-100 border-gray-300"
+                    selectedDay === key
+                      ? "bg-[#e2e3f3] border-[#6970c1]"
+                      : "bg-white hover:bg-gray-100 border-gray-300"
                   }`}
                 >
-                {/* 🗓️ Weekday on top */}
-                <span className="text-sm font-semibold text-gray-800">
-                  {i === 0 ? "Today" : day.day}
-                </span>
-
-                {/* 📅 Month + Date on same line */}
-                <span className="text-base font-bold text-gray-900">
-                  {day.date}
-                </span>
-
-                {/* 🎨 Colored dot below */}
-                <span
-                  className="w-2 h-2 rounded-full mt-2"
-                  style={{ backgroundColor: pastel }}
-                ></span>
+                  <span className="text-sm font-semibold text-gray-800">
+                    {i === 0 ? "Today" : day.day}
+                  </span>
+                  <span className="text-base font-bold text-gray-900">
+                    {day.date}
+                  </span>
+                  <span
+                    className="w-2 h-2 rounded-full mt-2"
+                    style={{ backgroundColor: pastel }}
+                  ></span>
                 </motion.button>
               );
             })}
-            </div>
-          )}
+          </div>
+        )}
+
         {/* 📅 Schedule Display */}
         <AnimatePresence>
           {scheduleData.days?.length > 0 && (
@@ -290,8 +305,7 @@ export default function Page() {
                         borderColor:
                           pastelColors[
                             scheduleData.days.findIndex(
-                              (d) =>
-                                `${d.day} ${d.date}` === selectedDay
+                              (d) => `${d.day} ${d.date}` === selectedDay
                             ) % pastelColors.length
                           ],
                       }}

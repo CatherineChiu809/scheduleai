@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Imperial_Script, Nunito_Sans } from "next/font/google";
-import { TaskProvider } from "./context/TaskContext";
+import { TaskProvider } from "../context/TaskContext";
 import "./globals.css";
 
 
@@ -15,8 +15,6 @@ const nunito_sans = Nunito_Sans({
   variable: "--font-nunito-sans",
   subsets: ["latin"],
 });
-
-
 
 // Metadata
 export const metadata: Metadata = {

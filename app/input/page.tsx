@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useTasks, Task } from "../context/TaskContext";
+import { useTasks, Task } from "@/context/TaskContext";
 import "./switchstyle.css";
+import Layout from "@/components/layout";
 
 export default function TodoPage() {
   const { tasks, addTask, updateTask, deleteTask, toggleTask } = useTasks();
@@ -18,14 +19,9 @@ export default function TodoPage() {
   };
 
   return (
-    <div className="flex flex-col items-center mt-10 px-4">
-      <Link href="/">
-        <button className="mb-6 bg-gray-500 text-white px-4 py-2 rounded">
-          Back to Home
-        </button>
-      </Link>
-        {/* add a new task */}
-      <form onSubmit={onSubmit} className="flex gap-2">
+    <Layout>
+    <div className="flex flex-col bg-[#c6dbd5] p-6 items-center mt-10 px-4">
+      <form onSubmit={onSubmit} className="flex gap-2 text-black">
         <input
           type="text"
           value={input}
@@ -33,17 +29,17 @@ export default function TodoPage() {
           placeholder="Add a new task"
           className="border rounded px-2 py-1"
         />
-        <button type="submit" className="bg-blue-500 text-white px-3 py-1 rounded">
+        <button type="submit" className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-700 transition disabled:opacity-50">
           Add
         </button>
       </form>
-{/* task line */}
+      {/* task line */}
       <div className="mt-6 w-full max-w-md space-y-2">
         {tasks.length === 0 && (
-          <p className="text-gray-500 text-center">No tasks yet. Add one!</p>
+          <p className="text-gray-500 text-black text-center">No tasks yet. Add one!</p>
         )}
         {tasks.map((task) => (
-          <div key={task.id} className="flex items-center justify-between">
+          <div key={task.id} className="flex items-center text-black justify-between">
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -57,13 +53,11 @@ export default function TodoPage() {
                 {task.text}
               </span>
             </label>
-
-            {/* The gear icon is now the only clickable element to open the modal */}
             <span
               className="text-gray-400 text-sm cursor-pointer"
               onClick={(e) => {
-                e.stopPropagation();  // Prevent the task click event from firing
-                setSelectedTask(task); // Open the modal
+                e.stopPropagation(); 
+                setSelectedTask(task); 
               }}
             >⚙️</span>
           </div>
@@ -187,5 +181,6 @@ export default function TodoPage() {
         </div>
       )}
     </div>
+    </Layout>
   );
 }

@@ -7,3 +7,37 @@ The overall goal is to make a schedule that the user will be able to follow and 
 Also provide study and work strategies for all the quizzes and tests (recal through practice tests, spaced reptition and more) as well as some tips to help people retain the information that they are learning in their homework better. Put this information at the end of the entire schedule formatted like this: Math Quiz (bold, underline) \nWhen studying for your math quiz, here are some things to keep in mind: [put info here]
 Please present the schedule concisely while getting the information across effectivly. Don't add the blurb at the beginning explaining what you are doing, just start with the schedule.
 Put the day of the week and then the date at the top for each day before printing the schedule. Format it like this example:  Monday 10/20 \n[put the schedule here]
+Respond ONLY with a valid JSON object, following this format exactly:
+{
+  "schedule": [
+    {
+      "day": "Monday",
+      "date": "10/21",
+      "timeStart": "09:00",
+      "timeEnd": "10:30",
+      "task": "Math Quiz Study",
+      "priority": "High"
+    },
+    {
+      "day": "Monday",
+      "date": "10/21",
+      "timeStart": "11:00",
+      "timeEnd": "12:00",
+      "task": "Biology Reading"
+    }
+  ],
+  "studyTips": [
+    {
+      "relatedTo": "Math Quiz Study",
+      "title": "Math Quiz",
+      "content": "Use practice problems and spaced repetition to strengthen recall."
+    },
+    {
+      "relatedTo": "Biology Reading",
+      "title": "Biology Review",
+      "content": "Summarize key concepts after each section to improve memory."
+    }
+  ]
+}
+
+

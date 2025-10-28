@@ -79,13 +79,20 @@ ${t.completed ? "This task can be split." : ""}
     if (fs.existsSync(txtPath)) {
       extraPrompt = fs.readFileSync(txtPath, "utf8");
     }
+    const today = new Date();
+    const todayStr = today.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+    });
 
     // 🧭 Scheduling prompt
     const prompt = `
 ${extraPrompt}
 
 You are an AI schedule planner that creates realistic, multi-day study and event schedules using cognitive science principles (Pomodoro, interleaving, spaced repetition).
-
+**Today's date is ${todayStr}.**
+All schedules should start from today unless explicitly stated otherwise.
 ### RULES
 - Output **ONLY valid JSON** (no markdown or commentary).
 - The top-level structure MUST be:
@@ -183,7 +190,8 @@ ${formattedEvents}
       const tipPrompt = `
 Generate ONE detailed, helpful study or productivity tip for each of the following tasks.
 Each tip should:
-- Include 1–2 relevant emojis (📚, ✍️, ⏳, 🧠, ☕, etc.)
+- Include 1–2 relevant emojis (📚, ✍️, ⏳, 🧠, ☕, 💡, etc.)
+- Do not include emojis in the tips, only at the beginning of the title
 - Be around 2–3 sentences (40–60 words).
 - Give practical, encouraging, and task-specific advice.
 

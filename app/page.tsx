@@ -104,7 +104,9 @@ export default function Page() {
   const handleSubmit = async () => {
     setLoading(true);
     setError(null);
-
+    setScheduleData({ days: [], studyTips: [] }); // 🧹 clear previous data
+    localStorage.removeItem("aiSchedule"); // optional: also clear cached schedule
+    
     try {
       console.log("🟢 Sending tasks:", savedTasks);
 

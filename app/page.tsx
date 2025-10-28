@@ -68,7 +68,7 @@ export default function Page() {
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const pastelColors = ["#FDCEDF", "#C3F8FF", "#D8F3DC", "#FFF3B0", "#E5CFF7"];
 
-  // 🧭 Load saved tasks & schedule from localStorage
+  // load saved tasks and schedule from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("tasks");
     if (saved) {
@@ -93,22 +93,22 @@ export default function Page() {
     }
   }, []);
 
-  // 💾 Save schedule to localStorage
+  //  save schedule to localStorage
   useEffect(() => {
     if (scheduleData?.days?.length) {
       localStorage.setItem("aiSchedule", JSON.stringify(scheduleData));
     }
   }, [scheduleData]);
 
-  // 🧠 Generate Schedule from API
+  // generate schedule!!
   const handleSubmit = async () => {
     setLoading(true);
     setError(null);
-    setScheduleData({ days: [], studyTips: [] }); // 🧹 clear previous data
-    localStorage.removeItem("aiSchedule"); // optional: also clear cached schedule
-    
+    setScheduleData({ days: [], studyTips: [] }); // clear previous data
+    localStorage.removeItem("aiSchedule"); // clear cached
+
     try {
-      console.log("🟢 Sending tasks:", savedTasks);
+      console.log("Sending tasks:", savedTasks);
 
       const res = await fetch("/api/schedule", {
         method: "POST",
@@ -125,9 +125,9 @@ export default function Page() {
       if (!res.ok) throw new Error(`Error: ${res.status}`);
 
       const data: ScheduleResponse = await res.json();
-      console.log("🟢 Schedule API Response:", data);
+      console.log("Schedule API Response:", data);
 
-      // ✅ Parse due dates from tasks
+      // parse due dates from tasks
       const taskDueDates = savedTasks
         .map((t) => (t.dueDate ? new Date(t.dueDate) : null))
         .filter((d): d is Date => d !== null);
@@ -144,7 +144,7 @@ export default function Page() {
           : new Date(today.getTime() + 4 * 24 * 60 * 60 * 1000)
         : new Date(today.getTime() + 4 * 24 * 60 * 60 * 1000);
 
-      // Map backend data and rebuild consistent day/date list
+      // go through the back end and make days accurate 
       const daysArray: DaySchedule[] = data.days
         .map((dayObj, index) => {
           const dayDate = new Date(today);
@@ -170,14 +170,14 @@ export default function Page() {
             })),
           };
         })
-        // ✅ Limit to 5 days OR until latest due date
+        // limit the number of day tabs (5 or lastest due date)
         .filter((dayObj) => {
           const date = new Date(`${dayObj.date}, ${today.getFullYear()}`);
           return date <= limitDate;
         })
         .slice(0, 10); // safety upper limit
 
-      // Save schedule
+      // save schedule
       setScheduleData({ days: daysArray, studyTips: data.studyTips || [] });
       localStorage.setItem(
         "aiSchedule",
@@ -189,10 +189,10 @@ export default function Page() {
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
-        console.error("❌ Error fetching schedule:", err);
+        console.error("Error fetching schedule:", err);
         setError(err.message);
       } else {
-        console.error("❌ Unknown error:", err);
+        console.error("Unknown error:", err);
         setError("Unexpected error generating schedule");
       }
     } finally {
@@ -214,7 +214,7 @@ export default function Page() {
   return (
     <main className="min-h-screen bg-[#c6dbd5] p-6 flex flex-col items-center font-sans relative">
       <div className="max-w-md w-full">
-        {/* 🌸 Top Buttons */}
+        {/* nav buttons */}
         <div className="absolute top-5 right-6 flex gap-3">
           <Link href="/input">
             <button className="bg-[#CBC6DB] text-gray-800 px-4 py-2 rounded-lg shadow font-semibold transition-all hover:bg-[#bbb4cf]">
@@ -228,7 +228,7 @@ export default function Page() {
           </Link>
         </div>
 
-        {/* 📝 Event Input */}
+        {/* event input areas */}
         <div className="bg-white rounded-2xl shadow-md p-5 mb-5 mt-16">
           <label className="block mb-2 font-medium text-gray-700"> Events </label>
           <input
@@ -247,10 +247,10 @@ export default function Page() {
           </button>
         </div>
 
-        {/* 🔴 Error Display */}
+        {/* errors :( */}
         {error && <p className="text-red-600 mt-4 text-center">{error}</p>}
 
-        {/* 🗓️ Day Selector */}
+        {/* day tabs */}
         {scheduleData.days?.length > 0 && (
           <div className="flex overflow-x-auto gap-3 mb-4 pb-2 scrollbar-hide">
             {scheduleData.days.map((day, i) => {
@@ -283,7 +283,7 @@ export default function Page() {
           </div>
         )}
 
-        {/* 📅 Schedule Display */}
+        {/* show schedule */}
         <AnimatePresence>
           {scheduleData.days?.length > 0 && (
             <motion.div
@@ -331,6 +331,7 @@ export default function Page() {
                               Priority: {block.priority}
                             </p>
                           )}
+                          {/* study tips! */}
                           {scheduleData.studyTips
                             ?.filter(
                               (tip) =>

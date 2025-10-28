@@ -7,9 +7,43 @@ const client = new OpenAI({
   baseURL: "https://api.groq.com/openai/v1",
 });
 
-export async function POST(req: Request) {
+interface Task {
+  text: string;
+  details?: string;
+  time?: string;
+  dueDate?: string;
+  priority?: string;
+  completed?: boolean;
+}
+
+interface ScheduleBlock {
+  timeStart?: string;
+  timeEnd?: string;
+  task?: string;
+  event?: string;
+  break?: string;
+}
+
+interface DaySchedule {
+  day: string;
+  date: string;
+  schedule: ScheduleBlock[];
+}
+
+interface ParsedResponse {
+  days?: DaySchedule[];
+  [key: string]: unknown;
+}
+
+interface StudyTip {
+  relatedTo: string;
+  title: string;
+  content: string;
+}
+
+export async function POST(req: Request): Promise<Response> {
   try {
-    const body = await req.json();
+    const body: { tasks?: Task[]; events?: string[] } = await req.json();
     const { tasks = [], events = [] } = body;
 
     if ((!tasks || tasks.length === 0) && (!events || events.length === 0)) {
@@ -22,7 +56,7 @@ export async function POST(req: Request) {
     // 🧠 Format tasks neatly for AI
     const formattedTasks = tasks
       .map(
-        (t: any) => `
+        (t: Task) => `
 Task: ${t.text}
 ${t.details ? `Notes: ${t.details}` : ""}
 ${t.time ? `Time Estimate: ${t.time}` : ""}
@@ -36,7 +70,7 @@ ${t.completed ? "This task can be split." : ""}
     // 🗓️ Format events
     const formattedEvents =
       events.length > 0
-        ? events.map((e: any) => `• ${e}`).join("\n")
+        ? events.map((e: string) => `• ${e}`).join("\n")
         : "No events provided.";
 
     // 🧩 Optional prompt
@@ -103,9 +137,9 @@ ${formattedEvents}
     const jsonEnd = raw.lastIndexOf("}");
     const cleanJSON = raw.slice(jsonStart, jsonEnd + 1);
 
-    let parsed;
+    let parsed: ParsedResponse;
     try {
-      parsed = JSON.parse(cleanJSON);
+      parsed = JSON.parse(cleanJSON) as ParsedResponse;
       console.log("✅ Parsed schedule:", JSON.stringify(parsed, null, 2));
     } catch {
       console.error("❌ JSON parse error from Groq:", raw);
@@ -118,29 +152,32 @@ ${formattedEvents}
         days: Object.entries(parsed).map(([day, schedule]) => ({
           day,
           date: "",
-          schedule: Array.isArray(schedule) ? schedule : [],
+          schedule: Array.isArray(schedule)
+            ? (schedule as ScheduleBlock[])
+            : [],
         })),
       };
     }
 
     // 🧠 Collect study-related task names
     const allTasks: string[] = [];
-    parsed.days?.forEach((day: any) => {
-      const related = day.schedule
-        ?.filter((b: any) =>
-          /(study|homework|hw|review|practice|essay|reading|assignment|prepare|research)/i.test(
-            b.task || ""
+    parsed.days?.forEach((day: DaySchedule) => {
+      const related =
+        day.schedule
+          ?.filter((b: ScheduleBlock) =>
+            /(study|homework|hw|review|practice|essay|reading|assignment|prepare|research)/i.test(
+              b.task || ""
+            )
           )
-        )
-        .map((b: any) => b.task);
-      if (related?.length) allTasks.push(...related);
+          .map((b) => b.task || "") ?? [];
+      if (related.length) allTasks.push(...related);
     });
 
     // Deduplicate task names to prevent multiple tips per task
     const uniqueStudyTasks = [...new Set(allTasks)].slice(0, 5); // max 5 per schedule
 
     // 🧠 Generate richer, single tips per task
-    let studyTips: any[] = [];
+    let studyTips: StudyTip[] = [];
 
     if (uniqueStudyTasks.length > 0) {
       const tipPrompt = `
@@ -177,7 +214,7 @@ ${uniqueStudyTasks.join("\n")}
       const cleanTips = rawTips.slice(start, end + 1);
 
       try {
-        studyTips = JSON.parse(cleanTips);
+        studyTips = JSON.parse(cleanTips) as StudyTip[];
         console.log("✅ Study Tips:", studyTips);
       } catch {
         console.warn("⚠️ Could not parse AI-generated tips:", rawTips);
@@ -189,12 +226,14 @@ ${uniqueStudyTasks.join("\n")}
     return new Response(JSON.stringify({ ...parsed, studyTips }), {
       headers: { "Content-Type": "application/json" },
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("💥 Error in /api/schedule:", err);
+    const message =
+      err instanceof Error ? err.message : "Unknown error occurred.";
     return new Response(
       JSON.stringify({
         error: "Failed to generate schedule",
-        details: err.message,
+        details: message,
       }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );

@@ -39,6 +39,8 @@ interface StudyTip {
 
 interface ScheduleResponse {
   days: {
+    day?: string;
+    date?: string;
     schedule: {
       timeStart?: string;
       timeEnd?: string;
@@ -68,7 +70,7 @@ export default function Page() {
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const pastelColors = ["#FDCEDF", "#C3F8FF", "#D8F3DC", "#FFF3B0", "#E5CFF7"];
 
-  // load saved tasks and schedule from localStorage
+  // 🧭 Load saved tasks & schedule from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("tasks");
     if (saved) {
@@ -93,23 +95,21 @@ export default function Page() {
     }
   }, []);
 
-  //  save schedule to localStorage
+  // 💾 Save schedule to localStorage
   useEffect(() => {
     if (scheduleData?.days?.length) {
       localStorage.setItem("aiSchedule", JSON.stringify(scheduleData));
     }
   }, [scheduleData]);
 
-  // generate schedule!!
+  // 🧠 Generate Schedule from API
   const handleSubmit = async () => {
     setLoading(true);
     setError(null);
-    setScheduleData({ days: [], studyTips: [] }); // clear previous data
-    localStorage.removeItem("aiSchedule"); // clear cached
+    setScheduleData({ days: [], studyTips: [] }); // clear previous schedule
+    localStorage.removeItem("aiSchedule");
 
     try {
-      console.log("Sending tasks:", savedTasks);
-
       const res = await fetch("/api/schedule", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -125,9 +125,8 @@ export default function Page() {
       if (!res.ok) throw new Error(`Error: ${res.status}`);
 
       const data: ScheduleResponse = await res.json();
-      console.log("Schedule API Response:", data);
+      console.log("🟢 Schedule API Response:", data);
 
-      // parse due dates from tasks
       const taskDueDates = savedTasks
         .map((t) => (t.dueDate ? new Date(t.dueDate) : null))
         .filter((d): d is Date => d !== null);
@@ -138,17 +137,79 @@ export default function Page() {
           : null;
 
       const today = new Date();
+      today.setHours(0, 0, 0, 0);
       const limitDate = latestDueDate
         ? latestDueDate > new Date(today.getTime() + 4 * 24 * 60 * 60 * 1000)
           ? latestDueDate
           : new Date(today.getTime() + 4 * 24 * 60 * 60 * 1000)
         : new Date(today.getTime() + 4 * 24 * 60 * 60 * 1000);
 
-      // go through the back end and make days accurate 
+      // ✅ Robustly align returned days to real calendar
+      const parseDateFromString = (dateStr: string | undefined): Date | null => {
+        if (!dateStr) return null;
+        try {
+          if (dateStr.includes("/")) {
+            const parts = dateStr.split("/").map((p) => p.trim());
+            if (parts.length >= 2) {
+              const month = parseInt(parts[0], 10) - 1;
+              const day = parseInt(parts[1], 10);
+              const year = parts.length === 3 ? parseInt(parts[2], 10) : today.getFullYear();
+              const d = new Date(year, month, day);
+              if (!Number.isNaN(d.getTime())) return d;
+            }
+          }
+          const maybe = new Date(`${dateStr}, ${today.getFullYear()}`);
+          if (!Number.isNaN(maybe.getTime())) return maybe;
+        } catch {
+          return null;
+        }
+        return null;
+      };
+
+      const weekdayNameToIndex = (name: string) => {
+        const normalized = name.toLowerCase().slice(0, 3);
+        const map: Record<string, number> = {
+          sun: 0,
+          mon: 1,
+          tue: 2,
+          wed: 3,
+          thu: 4,
+          fri: 5,
+          sat: 6,
+        };
+        return map[normalized] ?? -1;
+      };
+
+      let matchIndex = -1;
+      for (let i = 0; i < data.days.length; i++) {
+        const d = data.days[i];
+        const parsedDate = parseDateFromString(d.date);
+        if (parsedDate) {
+          parsedDate.setHours(0, 0, 0, 0);
+          if (parsedDate.getTime() === today.getTime()) {
+            matchIndex = i;
+            break;
+          }
+        }
+        const dayName = d.day;
+        if (typeof dayName === "string") {
+          const idx = weekdayNameToIndex(dayName);
+          if (idx !== -1 && idx === today.getDay()) {
+            matchIndex = i;
+            break;
+          }
+        }
+      }
+
+      if (matchIndex === -1) matchIndex = 0;
+
+      const baseDate = new Date(today);
+      baseDate.setDate(today.getDate() - matchIndex);
+
       const daysArray: DaySchedule[] = data.days
         .map((dayObj, index) => {
-          const dayDate = new Date(today);
-          dayDate.setDate(today.getDate() + index);
+          const dayDate = new Date(baseDate);
+          dayDate.setDate(baseDate.getDate() + index);
           const formattedDate = dayDate.toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
@@ -170,14 +231,12 @@ export default function Page() {
             })),
           };
         })
-        // limit the number of day tabs (5 or lastest due date)
         .filter((dayObj) => {
           const date = new Date(`${dayObj.date}, ${today.getFullYear()}`);
           return date <= limitDate;
         })
-        .slice(0, 10); // safety upper limit
+        .slice(0, 10);
 
-      // save schedule
       setScheduleData({ days: daysArray, studyTips: data.studyTips || [] });
       localStorage.setItem(
         "aiSchedule",
@@ -189,10 +248,10 @@ export default function Page() {
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
-        console.error("Error fetching schedule:", err);
+        console.error("❌ Error fetching schedule:", err);
         setError(err.message);
       } else {
-        console.error("Unknown error:", err);
+        console.error("❌ Unknown error:", err);
         setError("Unexpected error generating schedule");
       }
     } finally {
@@ -214,7 +273,7 @@ export default function Page() {
   return (
     <main className="min-h-screen bg-[#c6dbd5] p-6 flex flex-col items-center font-sans relative">
       <div className="max-w-md w-full">
-        {/* nav buttons */}
+        {/* 🌸 Top Buttons */}
         <div className="absolute top-5 right-6 flex gap-3">
           <Link href="/input">
             <button className="bg-[#CBC6DB] text-gray-800 px-4 py-2 rounded-lg shadow font-semibold transition-all hover:bg-[#bbb4cf]">
@@ -228,7 +287,7 @@ export default function Page() {
           </Link>
         </div>
 
-        {/* event input areas */}
+        {/* 📝 Event Input */}
         <div className="bg-white rounded-2xl shadow-md p-5 mb-5 mt-16">
           <label className="block mb-2 font-medium text-gray-700"> Events </label>
           <input
@@ -247,10 +306,10 @@ export default function Page() {
           </button>
         </div>
 
-        {/* errors :( */}
+        {/* 🔴 Error Display */}
         {error && <p className="text-red-600 mt-4 text-center">{error}</p>}
 
-        {/* day tabs */}
+        {/* 🗓️ Day Selector */}
         {scheduleData.days?.length > 0 && (
           <div className="flex overflow-x-auto gap-3 mb-4 pb-2 scrollbar-hide">
             {scheduleData.days.map((day, i) => {
@@ -283,7 +342,7 @@ export default function Page() {
           </div>
         )}
 
-        {/* show schedule */}
+        {/* 📅 Schedule Display */}
         <AnimatePresence>
           {scheduleData.days?.length > 0 && (
             <motion.div
@@ -331,7 +390,6 @@ export default function Page() {
                               Priority: {block.priority}
                             </p>
                           )}
-                          {/* study tips! */}
                           {scheduleData.studyTips
                             ?.filter(
                               (tip) =>

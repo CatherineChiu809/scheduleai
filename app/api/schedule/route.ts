@@ -132,6 +132,10 @@ You are given:
     - always proritize higher priority levels and closer due dates when moving tasks past their due dates
 - If a recurring event is like "Mon–Fri 8–5pm", apply it **for all those weekdays**, including today if it matches.
 - Always assign correct days and times.
+- You can extend schedules to 11pm if needed (when there are too many tasks to fit into a day)
+    -If you end the previous day later, make sure to start the next day a bit later as well
+    -ex) end 10/27 at 11pm and start 10/28 at 7:30am
+    -When you do this make sure to observe all start times for tasks and leave room for meals IF POSSIBLE
 - Include realistic gaps between items like prep times to move from one event to another.
 
 ### INPUT DATA

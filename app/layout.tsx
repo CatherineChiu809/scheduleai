@@ -32,7 +32,6 @@ export default function RootLayout({
       <body
         className={`${imperial_script.variable} antialiased`}
       >
-        {/* Wrap with your context provider */}
         <TaskProvider>
           {children}
         </TaskProvider>

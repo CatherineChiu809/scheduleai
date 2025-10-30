@@ -53,7 +53,7 @@ export async function POST(req: Request): Promise<Response> {
       );
     }
 
-    // format tasks neatly for AI to read better
+    // format tasks for ai
     const formattedTasks = tasks
       .map(
         (t: Task) => `

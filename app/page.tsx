@@ -70,7 +70,7 @@ export default function Page() {
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const pastelColors = ["#FDCEDF", "#C3F8FF", "#D8F3DC", "#FFF3B0", "#E5CFF7"];
 
-  // 🧭 Load saved tasks & schedule from localStorage
+  // lLoad saved tasks & schedule from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("tasks");
     if (saved) {
@@ -95,14 +95,14 @@ export default function Page() {
     }
   }, []);
 
-  // 💾 Save schedule to localStorage
+  // save schedule to localStorage
   useEffect(() => {
     if (scheduleData?.days?.length) {
       localStorage.setItem("aiSchedule", JSON.stringify(scheduleData));
     }
   }, [scheduleData]);
 
-  // 🧠 Generate Schedule from API
+  // generate Schedule from API
   const handleSubmit = async () => {
     setLoading(true);
     setError(null);
@@ -125,7 +125,7 @@ export default function Page() {
       if (!res.ok) throw new Error(`Error: ${res.status}`);
 
       const data: ScheduleResponse = await res.json();
-      console.log("🟢 Schedule API Response:", data);
+      console.log("Schedule API Response:", data);
 
       const taskDueDates = savedTasks
         .map((t) => (t.dueDate ? new Date(t.dueDate) : null))
@@ -144,7 +144,7 @@ export default function Page() {
           : new Date(today.getTime() + 4 * 24 * 60 * 60 * 1000)
         : new Date(today.getTime() + 4 * 24 * 60 * 60 * 1000);
 
-      // ✅ Robustly align returned days to real calendar
+      // robustly align returned days to real calendar
       const parseDateFromString = (dateStr: string | undefined): Date | null => {
         if (!dateStr) return null;
         try {
@@ -248,10 +248,10 @@ export default function Page() {
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
-        console.error("❌ Error fetching schedule:", err);
+        console.error("Error fetching schedule:", err);
         setError(err.message);
       } else {
-        console.error("❌ Unknown error:", err);
+        console.error("Unknown error:", err);
         setError("Unexpected error generating schedule");
       }
     } finally {
@@ -271,10 +271,15 @@ export default function Page() {
   };
 
   return (
-    <main className="min-h-screen bg-[#c6dbd5] p-6 flex flex-col items-center font-sans relative">
-      <div className="max-w-md w-full">
-        {/* 🌸 Top Buttons */}
-        <div className="absolute top-5 right-6 flex gap-3">
+    <main className="min-h-screen bg-[#c6dbd5] flex flex-col items-center font-sans relative">
+      <header className="w-full  backdrop-blur-md bg-[#7aaa9d]/80 shadow-md py-4 px-6 flex flex-col items-center relative">
+        {/* nav buttons */}
+        <div className="absolute right-6 top-4 flex gap-3">
+          <Link href="/script">
+            <button className="bg-[#CED3BA] text-gray-800 px-4 py-2 rounded-lg shadow font-semibold transition-all hover:bg-[#c6ccaf]">
+              info
+            </button>
+          </Link>
           <Link href="/input">
             <button className="bg-[#CBC6DB] text-gray-800 px-4 py-2 rounded-lg shadow font-semibold transition-all hover:bg-[#bbb4cf]">
               todo
@@ -286,9 +291,18 @@ export default function Page() {
             </button>
           </Link>
         </div>
-
-        {/* 📝 Event Input */}
+        <div className="flex flex-col items-center">
+          <h1 className="text-4xl font-bold text-gray-800 tracking-tight">
+            Synapse
+          </h1>
+          <p className="text-gray-600 font-medium mt-1">
+            Organizing Student Success
+          </p>
+        </div>
+      </header>
+        {/* event input */}
         <div className="bg-white rounded-2xl shadow-md p-5 mb-5 mt-16">
+          
           <label className="block mb-2 font-medium text-gray-700"> Events </label>
           <input
             type="text"
@@ -306,10 +320,10 @@ export default function Page() {
           </button>
         </div>
 
-        {/* 🔴 Error Display */}
+        {/* errors :(*/}
         {error && <p className="text-red-600 mt-4 text-center">{error}</p>}
 
-        {/* 🗓️ Day Selector */}
+        {/* day selector */}
         {scheduleData.days?.length > 0 && (
           <div className="flex overflow-x-auto gap-3 mb-4 pb-2 scrollbar-hide">
             {scheduleData.days.map((day, i) => {
@@ -342,7 +356,9 @@ export default function Page() {
           </div>
         )}
 
-        {/* 📅 Schedule Display */}
+        {/* schedule display :)*/}
+        <div className="flex justify-center w-full px-4 mt-8">
+        <div className="w-full max-w-md">
         <AnimatePresence>
           {scheduleData.days?.length > 0 && (
             <motion.div
@@ -417,7 +433,9 @@ export default function Page() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
-    </main>
+        </div>
+        </div>
+      </main>
+
   );
 }
